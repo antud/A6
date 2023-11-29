@@ -7,6 +7,7 @@ import android.database.CursorIndexOutOfBoundsException;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -32,6 +33,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 
@@ -54,6 +56,7 @@ public class StoryTellerActivity extends AppCompatActivity {
     TextView story;
     TextView selectedStoryTags;
     StringBuilder selectedTags;
+    TextToSpeech tts;
 
 
     @Override
@@ -92,6 +95,15 @@ public class StoryTellerActivity extends AppCompatActivity {
 
         adapter.setOnItemCheckListener(() -> {
             updateSelectedTagText();
+        });
+        tts = null;
+        tts = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if (status != TextToSpeech.ERROR) {
+                    tts.setLanguage(Locale.US);
+                }
+            }
         });
 
 
@@ -216,6 +228,8 @@ public class StoryTellerActivity extends AppCompatActivity {
                     JSONArray outArr = data.getJSONArray("outputs");
                     JSONObject newRes = outArr.getJSONObject(0);
                     story.setText("Response: " + newRes.getString("text"));
+                    tts.speak(newRes.getString("text"), TextToSpeech.QUEUE_FLUSH, null, null);
+
                 } catch (JSONException e) {
                     throw new RuntimeException(e);
                 }
